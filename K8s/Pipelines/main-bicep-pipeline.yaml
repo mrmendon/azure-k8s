@@ -1,0 +1,14 @@
+name: Deploy K8s Bicep
+
+trigger: none
+
+variables:
+  - name: azureServiceConnection
+    value: 'wif-ado-k8s-prod'
+  - name: adoEnvironment
+    value: 'K8s'
+  
+stages:
+- template: ./templates/bicep-pipeline.yaml
+  parameters:
+    adoEnvironment: $(adoEnvironment)

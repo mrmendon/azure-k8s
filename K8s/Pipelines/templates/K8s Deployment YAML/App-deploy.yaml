@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: aspdotnetapp-deploy
+
+spec:
+  replicas: 1
+  selector: 
+    matchLabels:
+      app: aspdotnetapp
+  template:
+    metadata:
+      labels:
+        app: aspdotnetapp
+    spec:
+      containers:
+        - name: aspdotnetapp
+          image: 'acraspnetuksk8sprod.azurecr.io/aspnetsample:latest' #change to your acr and image
+       
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aspdotnetapp-svc
+spec:
+  type: ClusterIP
+  selector: 
+    app: aspdotnetapp
+  ports:
+  - name: aspdotnetapp
+    protocol: TCP
+    port: 8080
+    targetPort: 8080
+  

@@ -1,0 +1,51 @@
+stages:
+- stage: DeployApp
+  displayName: 'Deploy App'
+  jobs:
+  - deployment: Deploy
+    displayName: 'Deploy App'
+    environment: ${{ parameters.adoEnvironment }}
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: Kubernetes@1
+            displayName: 'Deploy Deployment to AKS'
+            inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscriptionEndpoint: $(azureServiceConnection)
+              azureResourceGroup: ${{ parameters.azureResourceGroupName }}
+              kubernetesCluster: ${{ parameters.k8ClusterName }}
+              useClusterAdmin: true
+              command: 'apply'
+              useConfigurationFile: true
+              configuration: '$(System.DefaultWorkingDirectory)/K8s/Pipelines/templates/K8s Deployment YAML/App-deploy.yaml'
+
+- stage: DeployAppNP
+  displayName: 'Deploy App NP'
+  jobs:
+  - deployment: Deploy
+    displayName: 'Deploy App NP Service'
+    environment: ${{ parameters.adoEnvironment }}
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: Kubernetes@1
+            displayName: 'Deploy Deployment to AKS'
+            inputs:
+              connectionType: 'Azure Resource Manager'
+              azureSubscriptionEndpoint: $(azureServiceConnection)
+              azureResourceGroup: ${{ parameters.azureResourceGroupName }}
+              kubernetesCluster: ${{ parameters.k8ClusterName }}
+              useClusterAdmin: true
+              command: 'apply'
+              useConfigurationFile: true
+              configuration: '$(System.DefaultWorkingDirectory)/K8s/Pipelines/templates/K8s Deployment YAML/App-np-deploy.yaml'
+

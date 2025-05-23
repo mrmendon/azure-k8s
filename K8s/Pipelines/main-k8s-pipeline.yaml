@@ -1,0 +1,36 @@
+name: Deploy K8s
+
+trigger: none
+
+variables:
+  - name: azureServiceConnection
+    value: 'wif-ado-k8s-prod'
+  - name: dockerServiceConnection
+    value: 'docker-ado-k8s-prod'
+  - name: adoEnvironment
+    value: 'K8s'
+  - name: azureResourceGroupName
+    value: 'rg-uks-k8s-prod'
+  - name: k8ClusterName
+    value: 'k8-uks-aspnet-prod'
+  - name: acrName
+    value: 'acraspnetuksk8sprod'
+  - name: acrRepoName
+    value: 'aspnetsample'
+  
+stages:
+- template: ./templates/acr-docker.yaml
+  parameters:
+    acrRepoName: $(acrRepoName)
+
+- template: ./templates/K8s-deployment.yaml
+  parameters:
+    adoEnvironment: $(adoEnvironment)
+    azureServiceConnection: $(azureServiceConnection)
+    azureResourceGroupName: $(azureResourceGroupName)
+    k8ClusterName: $(k8ClusterName)
+    acrName: $(acrnasuksk8sprod)
+    acrRepoName: $(acrRepoName)
+
+
+

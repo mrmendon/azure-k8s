@@ -1,0 +1,46 @@
+parameters:
+- name: adoEnvironment
+  type: string
+
+stages:
+- stage: 'Bicep_What_If'
+  displayName: 'Bicep What If'
+  jobs:
+  - job: 'Bicep_What_If'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: AzureCLI@2
+      displayName: K8s Deployment What if
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: "bash"
+        scriptLocation: "inlineScript"
+        inlineScript: |
+          name=kubernetesWhatIf$(date +%F_%H-%M-%S)
+          az deployment sub what-if -l 'uksouth' -n $name -f '.\K8s\Bicep\main.bicep' --parameters '.\K8s\Bicep\main.bicepparam'
+
+- stage: 'Bicep_Deploy'
+  displayName: 'Bicep Deploy'
+  dependsOn:
+  - 'Bicep_What_If'
+  condition: succeeded()
+  jobs:
+  - deployment: 'Bicep_Deploy'
+    pool:
+      vmImage: 'ubuntu-latest'
+    environment: ${{ parameters.adoEnvironment }} # using an ADO environment allows us to add a manual approval check
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          - task: AzureCLI@2
+            displayName: K8s Deployment
+            inputs:
+              azureSubscription: $(azureServiceConnection)
+              scriptType: "bash"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                name=KubernetesDeployment$(date +%F_%H-%M-%S)
+                az deployment sub create -l 'uksouth'  -n $name -f '.\K8s\Bicep\main.bicep' --parameters '.\K8s\Bicep\main.bicepparam'
